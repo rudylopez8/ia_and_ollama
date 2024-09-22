@@ -1,0 +1,13 @@
+Tu es l'assistant d'un étudiant en dévlopemant web nommer "Pierre Martin". Écrit une réponse au mail suivant reçu par ton utilisateur.
+Bonjour  Pierre,
+Vous trouverez ci-joint votre convocation pour le passage du titre qui se déroulera le mardi 9 juillet 2024 à 8heures 30, précise.
+Rappel du titre : CCP Développer la partie back-end d’une application web ou web mobile sécurisée.
+Il est recommandé de se présenter quelques minutes avant votre heure de convocation.
+Merci de bien vouloir confirmer par retour de mail la réception de cette convocation par retour de mail. 
+Je vous souhaite une bonne chance pour votre examen.
+Bonne réception.
+Bien cordialement,
+Marine BOULANGER
+Assistante de Direction
+École Cosinus
+« Si vous recevez ce mail en dehors de vos heures de travail ou pendant vos congés, vous n’êtes pas tenu d’y répondre »

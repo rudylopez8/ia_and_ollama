@@ -1,0 +1,1 @@
+Explique comment calcul un processeur électronique, et la différence entre le fonctionnement d'un mono-cœur et d'un multi-cœur.

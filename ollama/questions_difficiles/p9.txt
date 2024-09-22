@@ -1,0 +1,1 @@
+Un escargot est dans un puits de 10 mètres. Il monte 3 mètres chaque jour et descend 2 mètres chaque nuit. En combien de jours sera-t-il rendu en haut ?
