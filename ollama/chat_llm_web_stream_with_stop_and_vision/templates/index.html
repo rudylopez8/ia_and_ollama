@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot</title>
+  <style>
+    #chat-box {
+      height: 400px;
+      width: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      white-space: pre-wrap; /* Pour conserver la mise en forme */
+    }
+    /* S'applique à tous les messages dans le chat */
+    #chat-box div {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    #user-input {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+  <!-- Conteneur pour l'affichage des messages -->
+  <div id="chat-box">
+    <!-- Les messages seront ajoutés ici -->
+  </div>
+
+  <!-- Zone d'édition et boutons -->
+  <div id="input-area">
+    <!-- Le wrap="soft" permet de ne pas insérer de retours à la ligne automatiques dans le texte -->
+    <textarea id="user-input" placeholder="Tapez votre message ici..." rows="5" wrap="soft"></textarea><br>
+    <button onclick="sendMessage()">Envoyer</button>
+    <button onclick="stopGeneration()">Stop</button>
+  </div>
+  <br>
+  <!-- Zone d'importation d'image -->
+  <input type="file" id="image-input">
+  <button onclick="uploadImage()">Importer l'image</button>
+  
+  
+  <script>
+    const socket = io();
+    const chatBox = document.getElementById('chat-box');
+    const userInputField = document.getElementById('user-input');
+    let uploadedImage = null;
+
+    // Fonction pour uploader l'image via l'endpoint /upload
+    function uploadImage() {
+      const fileInput = document.getElementById('image-input');
+      if (fileInput.files.length === 0) {
+        alert("Veuillez sélectionner une image à importer.");
+        return;
+      }
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      fetch('/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.filepath) {
+          uploadedImage = data.filepath;
+          alert("Image importée avec succès : " + uploadedImage);
+        } else {
+          alert("Erreur lors de l'importation de l'image.");
+        }
+      })
+      .catch(error => {
+        console.error('Erreur:', error);
+        alert("Erreur lors de l'importation de l'image.");
+      });
+    }
+
+    // Variable globale pour le conteneur de réponse du chatbot
+    let currentBotContainer = null;
+
+    function sendMessage() { 
+        const messageText = userInputField.value.trim();
+            if (messageText || uploadedImage) { // Autoriser l'envoi même si seul un fichier est sélectionné
+                // Créer et ajouter le message de l'utilisateur
+                const userMessageElem = document.createElement('div'); 
+                let displayMessage = `<b>Vous:</b> ${messageText.replace(/\n/g, '<br>')}`;
+                if (uploadedImage) {
+                    displayMessage += `<br><i>Image jointe :</i> ${uploadedImage}`;
+                }
+                userMessageElem.innerHTML = displayMessage;
+                chatBox.appendChild(userMessageElem);
+
+                // Préparer le payload avec le message utilisateur et le fichier image (si présent)
+                const payload = { message: messageText };
+                if (uploadedImage) { 
+                    payload.image = uploadedImage; 
+                }
+
+                // Réinitialiser le conteneur de réponse du chatbot
+                currentBotContainer = document.createElement('div');
+                currentBotContainer.innerHTML = `<b>Chatbot:</b> `;
+                chatBox.appendChild(currentBotContainer);
+
+                // Envoyer au serveur
+                socket.emit('send_message', payload);
+
+                // Vider la zone de saisie et réinitialiser le fichier image
+                userInputField.value = ''; 
+                uploadedImage = null;
+                document.getElementById('image-input').value = "";
+
+                // Faire défiler le chat vers le bas
+                chatBox.scrollTop = chatBox.scrollHeight; 
+          }
+    }
+
+    function stopGeneration() {
+      socket.emit('stop_generation');
+    }
+
+    socket.on('receive_message', function(data) {
+      if (currentBotContainer) {
+        const formattedResponse = data.response.replace(/\n/g, '<br>');
+        currentBotContainer.innerHTML += formattedResponse;
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  </script>
+</body>
+</html>
+
+
+

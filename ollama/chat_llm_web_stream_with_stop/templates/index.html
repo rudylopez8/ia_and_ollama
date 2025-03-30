@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot</title>
+  <style>
+    #chat-box {
+      height: 400px;
+      width: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      white-space: pre-wrap; /* Pour conserver la mise en forme */
+    }
+    /* S'applique à tous les messages dans le chat */
+    #chat-box div {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    #user-input {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+  <!-- Conteneur pour l'affichage des messages -->
+  <div id="chat-box">
+    <!-- Les messages seront ajoutés ici -->
+  </div>
+
+  <!-- Zone d'édition et boutons -->
+  <div id="input-area">
+    <!-- Le wrap="soft" permet de ne pas insérer de retours à la ligne automatiques dans le texte -->
+    <textarea id="user-input" placeholder="Tapez votre message ici..." rows="5" wrap="soft"></textarea><br>
+    <button onclick="sendMessage()">Envoyer</button>
+    <button onclick="stopGeneration()">Stop</button>
+  </div>
+
+  <script>
+    const socket = io();
+    const chatBox = document.getElementById('chat-box');
+    const userInputField = document.getElementById('user-input');
+
+    // Variable globale pour le conteneur de réponse du chatbot
+    let currentBotContainer = null;
+
+    function sendMessage() {
+      const messageText = userInputField.value;
+      if (messageText.trim()) {
+        // Créer et ajouter le message de l'utilisateur en remplaçant les retours à la ligne
+        const userMessageElem = document.createElement('div');
+        userMessageElem.innerHTML = `<b>Vous:</b> ${messageText.replace(/\n/g, '<br>')}`;
+        chatBox.appendChild(userMessageElem);
+
+        // Réinitialiser le conteneur de réponse
+        currentBotContainer = null;
+        // Créer un nouveau conteneur pour la réponse du chatbot
+        currentBotContainer = document.createElement('div');
+        currentBotContainer.innerHTML = `<b>Chatbot:</b> `;
+        chatBox.appendChild(currentBotContainer);
+
+        // Envoyer le message au serveur
+        socket.emit('send_message', { message: messageText });
+
+        // Vider la zone de saisie
+        userInputField.value = '';
+
+        // Faire défiler le chat vers le bas
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    }
+
+    function stopGeneration() {
+      socket.emit('stop_generation');
+    }
+
+    socket.on('receive_message', function(data) {
+      if (currentBotContainer) {
+        const formattedResponse = data.response.replace(/\n/g, '<br>');
+        currentBotContainer.innerHTML += formattedResponse;
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chatbot</title>
+<style>
+#chat-box {
+    height: 400px;
+    width: 300px;
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+input[type="text"] {
+    width: calc(100% - 22px);
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+
+<h2>Chat</h2>
+<div id="chat-box"></div>
+<input type="text" id="user-input" placeholder="Tapez votre message ici...">
+<br>
+<button onclick="sendMessage()">Envoyer</button>
+
+    <script>
+    const socket = io();
+    
+    function sendMessage() {
+        const chatBox = document.getElementById('chat-box');
+        // Finaliser le précédent message si présent
+        const existing = document.getElementById('current-chatbot');
+        if (existing) {
+           existing.removeAttribute('id');
+        }
+        
+        const userInput = document.getElementById('user-input').value;
+        if (userInput.trim()) {
+            // Afficher le message de l'utilisateur
+            chatBox.innerHTML += `<div><b>Vous:</b> ${userInput}</div>`;
+            // Créer un conteneur pour la réponse du chatbot
+            chatBox.innerHTML += `<div id="current-chatbot"><b>Chatbot:</b> </div>`;
+            // Envoyer la requête au serveur via SocketIO
+            socket.emit('send_message', {message: userInput});
+        }
+    
+        document.getElementById('user-input').value = '';  // Effacer la zone de texte après l'envoi
+    }
+    
+    socket.on('receive_message', function(data) {
+        // Récupérer le conteneur de réponse en cours
+        const chatbotMessageElem = document.getElementById('current-chatbot');
+        if (chatbotMessageElem) {
+            // Mettre à jour le contenu en ajoutant le nouveau chunk à la suite
+            chatbotMessageElem.innerHTML += data.response;
+        }
+        
+        // Scroller vers le bas pour voir les nouveaux messages
+        const chatBox = document.getElementById('chat-box');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+    </script>
+    
+</body>
+</html>

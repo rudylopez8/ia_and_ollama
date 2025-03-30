@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Wendy</title>
+    <style>
+        #chat-box {
+            height: 400px;
+            width: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+        }
+    </style>
+</head>
+<body>
+
+<h2>Chat avec Wendy</h2>
+<div id="chat-box"></div>
+<input type="text" id="user-input" placeholder="Tapez votre message ici...">
+<br>
+<button onclick="sendMessage()">Envoyer</button>
+
+<script>
+async function sendMessage() {
+    const userInput = document.getElementById('user-input').value;
+    const chatBox = document.getElementById('chat-box');
+
+    if (userInput.trim()) {
+        // Afficher le message de l'utilisateur
+        chatBox.innerHTML += `<div><b>Vous:</b> ${userInput}</div>`;
+
+        // Envoyer la requête au serveur Flask
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: userInput})
+            });
+            const data = await response.json();
+
+            // Afficher la réponse du chatbot
+            if (data.response) {
+                chatBox.innerHTML += `<div><b>Wendy:</b> ${data.response}</div>`;
+            }
+
+            // Scroller vers le bas pour voir les nouveaux messages
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi du message:', error);
+        }
+    }
+
+    document.getElementById('user-input').value = '';  // Effacer la zone de texte après l'envoi
+}
+</script>
+
+</body>
+</html>

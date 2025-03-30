@@ -1,14 +1,12 @@
 import ollama
-for _ in range(1, 10):
-	res = ollama.chat(
-		model="minicpm-v",
-		messages=[
-			{
-				'role': 'user',
-				'content': 'Décrit cette image en français',
-				'images': ['./img2.png']
-			}
-		]
-	)
 
-	print(res['message']['content'])
+response = ollama.chat(
+    model='minicpm-v',
+    messages=[{
+        'role': 'user',
+        'content': 'Describe this image in detail.',
+        'images': ['captured_image.jpg']
+    }]
+)
+
+print(response)
