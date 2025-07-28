@@ -46,9 +46,7 @@ def save_to_file_with_time(content, time_taken, model_name):
         file.write(f"\n\nTime taken: {time_taken:.2f} seconds\n\n")
 
 if __name__ == "__main__":
-    #list_model = ["phi3.5", "gemma2:2b", "nemotron-mini", "mistral-nemo", "llama3", "mistral", "llama3.1", "codestral", "solar-pro", "mathstral", "qwen2", "deepseek-v2"]  # Liste des modèles
-    #list_model = ["llama3.1:8b-instruct-q2_K", "gemma2:2b-instruct-q2_K", "phi3:3.8b-mini-128k-instruct-q2_K"]  # Liste des modèles
-    list_model = ["codestral"]  # Liste des modèles
+    list_model = ["llama3.2"]  # Liste des modèles
 
     for model_name in list_model:
         # Durée totale pour chaque modèle

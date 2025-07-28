@@ -12,6 +12,11 @@ import ollama
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='eventlet')
+model="gemma3"
+temperature = 0.125
+#top_k = 4
+#num_predict=8000
+num_ctx=4000
 
 # Dossier d'upload (créé s'il n'existe pas)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -91,7 +96,8 @@ def handle_send_message_event(json):
     # Appel de l'IA en mode streaming
     try:
         response_stream = ollama.chat(
-            'llama3.2-vision',
+            model,
+        options={"temperature":temperature, "num_ctx":num_ctx},                             
             messages=messages,
             stream=True
         )

@@ -10,16 +10,16 @@ socketio = SocketIO(app, async_mode='eventlet')
 # Dictionnaire pour gérer l'interruption par session
 interrupt_flags = {}
 # Paramètres globaux
-model="gemma3:12b"
-temperature = 0.25
+model="llama3.2" #mistral-nemo
+temperature = 0.125
 #top_k = 4
-num_predict=8000
-num_ctx=8120
+num_predict=4000
+num_ctx=4000
 
 messages = [
     {
         'role': 'system',
-        "content": "tu es un programme, utile fiable et serviable sincère, avec de très forte compétences en informatique biologie et mathématique.",
+        "content": "tu es un programme, utile fiable serviable et sincère.",
     },
 ]
 
@@ -39,7 +39,7 @@ def handle_send_message_event(json):
     # Génération de la réponse en mode streaming
     response_stream = chat(
         model,
-        options={"temperature":temperature, "num_predict":num_predict, "num_ctx":num_ctx},
+        options={"temperature":temperature, "num_ctx":num_ctx, "num_predict":num_predict},                             
         messages=messages,
         stream=True
     )

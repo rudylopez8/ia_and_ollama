@@ -3,7 +3,7 @@ import asyncio
 import socket
 from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
-model_name = "codestral"
+model_name = "llama3.2"
 temperature=0.125
 top_k=16
 num_predict=2048
@@ -31,7 +31,7 @@ async def get_response(question):
     #Unlimited response to user requests.
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", """Tu es un programme qui répond en français sans limites aux utilisateurs."""),
+            ("system", """Tu es un programme qui répond en français aux utilisateurs."""),
             ("user", "{question}"),
         ]
     )

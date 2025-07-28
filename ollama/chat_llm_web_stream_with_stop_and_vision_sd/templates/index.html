@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot & Vision</title>
+  <style>
+    #chat-box {
+      height: 400px;
+      width: 350px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+    }
+    #chat-box div {
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    textarea, input[type="file"] {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    button {
+      margin-right: 5px;
+    }
+    img.generated {
+      max-width: 100%;
+      border: 1px solid #666;
+      margin-top: 5px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+
+  <div id="chat-box"></div>
+
+  <!-- Chat texte -->
+  <textarea id="user-input" placeholder="Tapez votre message ici..." rows="3" wrap="soft"></textarea><br>
+  <button onclick="sendMessage()">Envoyer</button>
+  <button onclick="stopGeneration()">Stop</button>
+  <br><br>
+  <!-- Upload & analyse d'image -->
+  <input type="file" id="image-input" accept="image/*"><br>
+  <button onclick="uploadImage()">Importer et Analyser l’image</button>
+  <br><br>
+
+  <!-- Génération image -->
+  <textarea id="image-prompt" placeholder="Prompt pour générer une image..." rows="2" wrap="soft"></textarea><br>
+  <button onclick="generateImage()">Générer Image</button>
+  <button onclick="stopGeneration()">Stop</button>
+
+  <script>
+    const socket = io();
+    const chatBox = document.getElementById('chat-box');
+    let currentBotContainer = null;
+    let uploadedImage = null;
+
+    function appendMessage(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById('user-input').value.trim();
+      if (!msg && !uploadedImage) return;
+
+      // Affichage du message utilisateur
+      let userHtml = `<b>Vous:</b> ${msg.replace(/\n/g,'<br>')}`;
+      if (uploadedImage) {
+        userHtml += `<br><i>Image jointe :</i> ${uploadedImage}`;
+      }
+      appendMessage(userHtml);
+
+      // Préparation du container pour la réponse du bot
+      currentBotContainer = document.createElement('div');
+      currentBotContainer.innerHTML = `<b>Chatbot:</b> `;
+      chatBox.appendChild(currentBotContainer);
+
+      // Envoi de la requête
+      const payload = { message: msg };
+      if (uploadedImage) payload.image = uploadedImage;
+      socket.emit('send_message', payload);
+
+      // Reset
+      document.getElementById('user-input').value = '';
+      uploadedImage = null;
+      document.getElementById('image-input').value = '';
+    }
+
+    function generateImage() {
+      const prompt = document.getElementById('image-prompt').value.trim();
+      if (!prompt) return;
+
+      // Affichage du prompt
+      appendMessage(`<b>Vous (image):</b> ${prompt.replace(/\n/g,'<br>')}`);
+
+      // Container pour la réponse image
+      currentBotContainer = document.createElement('div');
+      currentBotContainer.innerHTML = `<b>Chatbot (image):</b> Requête de génération d’image envoyée`;
+      chatBox.appendChild(currentBotContainer);
+
+      // Envoi
+      socket.emit('generate_image', { prompt });
+      document.getElementById('image-prompt').value = '';
+    }
+
+    function uploadImage() {
+      const input = document.getElementById('image-input');
+      if (input.files.length === 0) {
+        alert("Sélectionnez une image.");
+        return;
+      }
+      const file = input.files[0];
+      const form = new FormData();
+      form.append('file', file);
+
+      fetch('/upload', { method: 'POST', body: form })
+        .then(r => r.json())
+        .then(data => {
+          if (data.filepath) {
+            uploadedImage = data.filepath;
+            alert("Image importée : " + uploadedImage);
+          } else {
+            alert("Erreur lors de l'importation.");
+          }
+        })
+        .catch(() => alert("Erreur réseau."));
+    }
+
+    function stopGeneration() {
+      socket.emit('stop_generation');
+    }
+
+    // Streaming texte
+    socket.on('receive_message', data => {
+      if (currentBotContainer) {
+        currentBotContainer.innerHTML += data.response.replace(/\n/g,'<br>');
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    });
+
+    // Réception image générée
+    socket.on('receive_image', data => {
+      if (!currentBotContainer) return;
+      if (data.error) {
+        currentBotContainer.innerHTML = `<b>Chatbot (image):</b> Erreur : ${data.error}`;
+      } else {
+        currentBotContainer.innerHTML = `
+          <b>Chatbot (image):</b><br>
+          <img class="generated" src="/uploads/${data.filepath}" alt="Generated image"><br>
+          <a href="/uploads/${data.filepath}" download> Télécharger </a>
+        `;
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  </script>
+</body>
+</html>

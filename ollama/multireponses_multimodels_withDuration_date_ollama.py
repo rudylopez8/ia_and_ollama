@@ -17,6 +17,7 @@ def get_response(model,question):
         "role": "system",
         "content": message_system,
     },
+    #{"role": "control", "content": "thinking"},
     {
         "role": "user",
         "content": question,
@@ -54,7 +55,13 @@ def save_to_file_with_time(content, time_taken, model_name):
         file.write(f"\n\nTime taken: {time_taken:.2f} seconds\n\n")
 
 if __name__ == "__main__":
-    list_model = ["gemma3:1b", "llama3.2:1b",]
+    #list_model = ["llama3.2:1b", "granite3.1-moe:1b"]
+    #list_model = ["llama3.2:1b", "granite3.1-dense:2b", "granite3.1:moe", "llama3.2", "gemma2:2b", "phi3.5", "deepscaler", "mistral", "mistral-nemo", "gemma2", "phi4", "deepseek-r1:14b", "mistral-small", "smollm2:135m", "smollm2"]
+    #"hf.co/croissantllm/CroissantLLMChat-v0.1-GGUF"
+    #list_model = ["openthinker", "marco-o1", "smallthinker", "falcon3", "falcon3:1b", "llava", "llama3.2-vision"]
+    #list_model = ["granite3.2:2b", "granite3.2"]
+    #list_model = ["llama3.2-vision", "phi4-mini"]
+    list_model = ["gemma3:1b", "gemma3", "gemma3:12b"]
     # Liste des modèles
 
 

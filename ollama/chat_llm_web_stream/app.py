@@ -26,7 +26,7 @@ def handle_send_message_event(json):
 
     # Génération de la réponse en mode streaming
     response_stream = chat(
-        'phi4',
+        'llama3.2',
         messages=messages,
         stream=True
     )

@@ -23,7 +23,7 @@ def chat_endpoint():
     messages.append({'role': 'user', 'content': user_input})
 
     response_stream = chat(
-        'llama3.2:1b',
+        'llama3.2',
         messages=messages,
         stream=True
     )
